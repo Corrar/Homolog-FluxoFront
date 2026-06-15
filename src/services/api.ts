@@ -161,12 +161,34 @@ export const updateProductPrices = async (id: number | string, data: { unit_pric
  * Apaga um confronto de viagem existente.
  * Se a viagem estiver aberta, devolve as reservas ao estoque.
  * Se estiver concluída, desfaz os movimentos de estoque físico.
- * 
- * @param travelId ID da viagem a ser apagada
+ * * @param travelId ID da viagem a ser apagada
  * @returns Resposta de sucesso do backend
  */
 export const deleteTravel = async (travelId: string): Promise<any> => {
   // CORREÇÃO: Alterado de '/travels/' para '/travel-orders/' para alinhar com o backend.
   const response = await api.delete(`/travel-orders/${travelId}`);
+  return response.data;
+};
+
+// ==========================================
+// TRANSFERÊNCIA ENTRE ARMAZÉNS (MULTI-FILIAL)
+// ==========================================
+
+export const getWarehouses = async (): Promise<any[]> => {
+  // Busca a lista de armazéns/setores disponíveis
+  const response = await api.get('/stock/warehouses');
+  return response.data;
+};
+
+export const transferStock = async (transferData: {
+  produtoId: string;
+  armazemOrigemId: string;
+  opOrigemId?: string; // Opcional, se for do almoxarifado principal
+  armazemDestinoId: string;
+  opDestinoId?: string; // Opcional, se for para uso geral do setor
+  quantidade: number;
+  observacao?: string;
+}): Promise<any> => {
+  const response = await api.post('/stock/transfer', transferData);
   return response.data;
 };
