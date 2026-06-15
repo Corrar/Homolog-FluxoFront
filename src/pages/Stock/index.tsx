@@ -16,6 +16,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
+// 🚀 NOVO: Importação do sistema de Abas (Tabs) e do teu novo componente
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StockTransferPanel } from "@/components/withdrawal/StockTransferPanel"; // Verifica se o caminho está correto!
+
 // Importações de Ícones
 import { Download, FileSpreadsheet, FileText, Search, Package, Filter, Lock, Loader2, MapPin, Factory, Truck, UserCircle, ArrowRight, PackageX } from "lucide-react"; 
 
@@ -326,8 +330,8 @@ export default function Stock() {
       {/* Topbar */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Relatórios de Estoque</h1>
-          <p className="text-sm md:text-base text-muted-foreground">Acompanhamento e Análise de Saldos</p>
+          <h1 className="text-2xl md:text-3xl font-bold">Gestão de Estoque</h1>
+          <p className="text-sm md:text-base text-muted-foreground">Acompanhamento, Saldos e Transferências</p>
         </div>
         <div className="flex flex-wrap gap-2 w-full md:w-auto">
           <DropdownMenu>
@@ -348,54 +352,78 @@ export default function Stock() {
         </div>
       </div>
 
-      {/* Filtros */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-card p-3 md:p-4 rounded-lg border shadow-sm">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Pesquisar por nome ou SKU..." value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="pl-10 bg-background" />
-        </div>
-        <div className="flex w-full sm:w-auto gap-2">
-          <Select value={stockFilter} onValueChange={(v) => { setStockFilter(v); setCurrentPage(1); }}>
-            <SelectTrigger className="w-1/2 sm:w-[170px] bg-background">
-              <Package className="w-4 h-4 mr-2 text-muted-foreground" /><SelectValue placeholder="Estoque" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todo o Estoque</SelectItem>
-              <SelectItem value="in_stock">Com Estoque (&gt; 0)</SelectItem>
-              <SelectItem value="low">Estoque Baixo</SelectItem>
-              <SelectItem value="zero">Estoque Zerado</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={selectedTag} onValueChange={(v) => { setSelectedTag(v); setCurrentPage(1); }}>
-            <SelectTrigger className="w-1/2 sm:w-[170px] bg-background">
-              <Filter className="w-4 h-4 mr-2 text-muted-foreground" /><SelectValue placeholder="Etiqueta" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as Etiquetas</SelectItem>
-              {allTags.map((tag) => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      {/* 🚀 NOVO: SISTEMA DE ABAS (TABS) */}
+      <Tabs defaultValue="overview" className="w-full space-y-6">
+        
+        {/* Menu das Abas */}
+        <TabsList className="bg-card border border-border/50 p-1 w-full justify-start overflow-x-auto h-auto rounded-lg">
+          <TabsTrigger value="overview" className="py-2.5 px-4 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+            Visão Geral (Kardex)
+          </TabsTrigger>
+          <TabsTrigger value="transfer" className="py-2.5 px-4 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+            Transferências (Multi-Armazéns)
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Tabela de Produtos */}
-      <StockTable 
-        paginatedStocks={paginatedStocks} isLoading={isLoading} canEditItem={canEditItem} 
-        canEditCost={canEditCost} canViewSalesPrice={canViewSalesPrice} canEditSalesPrice={canEditSalesPrice} 
-        handleOpenAdjust={handleOpenAdjust} handleOpenCostPrice={handleOpenCostPrice} handleOpenSalesPrice={handleOpenSalesPrice} 
-        handleOpenReserve={handleOpenReserve} 
-      />
+        {/* 1. ABA DE VISÃO GERAL (O código original do teu Index fica aqui dentro) */}
+        <TabsContent value="overview" className="space-y-4 md:space-y-6 mt-0">
+          
+          {/* Filtros */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 bg-card p-3 md:p-4 rounded-lg border shadow-sm">
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Pesquisar por nome ou SKU..." value={searchTerm} onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}} className="pl-10 bg-background" />
+            </div>
+            <div className="flex w-full sm:w-auto gap-2">
+              <Select value={stockFilter} onValueChange={(v) => { setStockFilter(v); setCurrentPage(1); }}>
+                <SelectTrigger className="w-1/2 sm:w-[170px] bg-background">
+                  <Package className="w-4 h-4 mr-2 text-muted-foreground" /><SelectValue placeholder="Estoque" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todo o Estoque</SelectItem>
+                  <SelectItem value="in_stock">Com Estoque (&gt; 0)</SelectItem>
+                  <SelectItem value="low">Estoque Baixo</SelectItem>
+                  <SelectItem value="zero">Estoque Zerado</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={selectedTag} onValueChange={(v) => { setSelectedTag(v); setCurrentPage(1); }}>
+                <SelectTrigger className="w-1/2 sm:w-[170px] bg-background">
+                  <Filter className="w-4 h-4 mr-2 text-muted-foreground" /><SelectValue placeholder="Etiqueta" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas as Etiquetas</SelectItem>
+                  {allTags.map((tag) => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-      {/* Paginação */}
-      {filteredStocks.length > 0 && !isLoading && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem><Button variant="ghost" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Anterior</Button></PaginationItem>
-            <PaginationItem><span className="text-sm mx-2">Pg {currentPage} de {totalPages}</span></PaginationItem>
-            <PaginationItem><Button variant="ghost" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Próximo</Button></PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+          {/* Tabela de Produtos */}
+          <StockTable 
+            paginatedStocks={paginatedStocks} isLoading={isLoading} canEditItem={canEditItem} 
+            canEditCost={canEditCost} canViewSalesPrice={canViewSalesPrice} canEditSalesPrice={canEditSalesPrice} 
+            handleOpenAdjust={handleOpenAdjust} handleOpenCostPrice={handleOpenCostPrice} handleOpenSalesPrice={handleOpenSalesPrice} 
+            handleOpenReserve={handleOpenReserve} 
+          />
+
+          {/* Paginação */}
+          {filteredStocks.length > 0 && !isLoading && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem><Button variant="ghost" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Anterior</Button></PaginationItem>
+                <PaginationItem><span className="text-sm mx-2">Pg {currentPage} de {totalPages}</span></PaginationItem>
+                <PaginationItem><Button variant="ghost" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Próximo</Button></PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+        </TabsContent>
+
+        {/* 2. ABA DE TRANSFERÊNCIA (Chama o teu novo componente) */}
+        <TabsContent value="transfer" className="mt-0">
+          <StockTransferPanel />
+        </TabsContent>
+
+      </Tabs>
 
       {/* ================= MODAIS BÁSICOS ================= */}
       <Dialog open={adjustDialog} onOpenChange={setAdjustDialog}>
